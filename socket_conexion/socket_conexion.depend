@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1557324848 source:/home/jdespo/Documentos/PROGRAMACION/socket_conexion/main.c
+	<stdlib.h>
+	<stdio.h>
+	<stdint.h>
+	<arpa/inet.h>
+	<sys/socket.h>
+

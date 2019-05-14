@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1555281523 source:/home/vale/tp-sistOperativos/socket_cliente/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<arpa/inet.h>
+	<sys/socket.h>
+
+1557326626 source:/home/jdespo/Documentos/PROGRAMACION/tp-sistOperativos/socket_cliente/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<arpa/inet.h>
+	<sys/socket.h>
+
