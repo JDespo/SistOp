@@ -17,16 +17,30 @@ int main(void) {
     return 1;
   }else{printf("Se conector con el servidor \n");}
 
-  char mensaje[]="Soy el cliente DELL";
-    send(cliente, mensaje, strlen(mensaje), 0);
+  
+    	
+	char* bufferRecev = malloc(1000);
+	char* bufferSend = malloc(1000);
+	send(cliente, "Soy el cliente DELL", 20, 0);
 
-  while(1){
-   // char mensaje[1000];
-    scanf("%s", mensaje);
+    while(1){
+	int bytesRecibidos = recv(cliente, bufferRecev, 1000, 0);
+	if (bytesRecibidos <= 0) {
+		perror("El servidor se desconecto.");
+		return 1;
+	}
 
-    send(cliente, mensaje, strlen(mensaje), 0);
+	bufferRecev[bytesRecibidos] = '\0';
+	printf("SERVIDOR: %s\n", bufferRecev);
+
+
+	printf("\nCLIENTE: ");
+	fgets(bufferSend, 20, stdin);
+	printf("\n");
+    	send(cliente, bufferSend, strlen(bufferSend), 0);
   }
 
-
-    return 0;
+	free(bufferRecev);
+	free(bufferSend);
+	return 0;;
 }
