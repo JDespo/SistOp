@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdint.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -30,25 +31,30 @@ int main(void) {
 	int cliente = accept(servidor, (void*) &direccionCliente, &tamanodireccion);
 
 	printf("Conexion OK!! %i\n", cliente);
-	send(cliente, "Hola NetCat!", 13, 0);
-	send(cliente, ":)\n", 4, 0);
+	//send(cliente, "Hola NetCat!", 13, 0);
+	//send(cliente, ":)\n", 4, 0);
 
 	//------------------------------
 
-	char* buffer = malloc(1000);
-
+	char* bufferRecev = malloc(1000);
+	char* bufferSend = malloc(1000);
 	while (1) {
-		int bytesRecibidos = recv(cliente, buffer, 1000, 0);
+		int bytesRecibidos = recv(cliente, bufferRecev, 1000, 0);
 		if (bytesRecibidos <= 0) {
 			perror("El cliente se desconecto.");
 			return 1;
 		}
 
-		buffer[bytesRecibidos] = '\0';
-		printf("Mensaje del Cliente: \nMe llegaron %d bytes con %s\n", bytesRecibidos, buffer);
+		bufferRecev[bytesRecibidos] = '\0';
+		printf("CLIENTE:  %s\n", bufferRecev);
+
+	printf("\nSERVIDOR: ");
+	fgets(bufferSend, 20, stdin);
+	printf("\n");
+    send(cliente, bufferSend, strlen(bufferSend), 0);
 	}
 
-	free(buffer);
-
+	free(bufferRecev);
+	free(bufferSend);
 	return 0;
 }
