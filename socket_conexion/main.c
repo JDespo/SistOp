@@ -31,8 +31,6 @@ int main(void) {
 	int cliente = accept(servidor, (void*) &direccionCliente, &tamanodireccion);
 
 	printf("Conexion OK!! %i\n", cliente);
-	//send(cliente, "Hola NetCat!", 13, 0);
-	//send(cliente, ":)\n", 4, 0);
 
 	//------------------------------
 
@@ -51,7 +49,7 @@ int main(void) {
 	printf("\nSERVIDOR: ");
 	fgets(bufferSend, 20, stdin);
 	printf("\n");
-    send(cliente, bufferSend, strlen(bufferSend), 0);
+    	send(cliente, bufferSend, strlen(bufferSend), 0);
 	}
 
 	free(bufferRecev);
