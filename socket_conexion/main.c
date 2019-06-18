@@ -1,58 +1,94 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
-#include <arpa/inet.h>
+#include <unistd.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-int main(void) {
-	struct sockaddr_in direccionServidor;
-	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = INADDR_ANY;
-	direccionServidor.sin_port = htons(8080);
+#define PORT 4444
 
-	int servidor = socket(AF_INET, SOCK_STREAM, 0);
+int main()
+{
 
-	int activado = 1;
-	setsockopt(servidor, SOL_SOCKET, SO_REUSEADDR, &activado, sizeof(activado));
+	// --------- STRUCT SERVER--------
+	struct sockaddr_in serverAddr;
+	struct sockaddr_in newAddr;
+	memset(&serverAddr, '\0', sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(PORT);
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-	if (bind(servidor, (void*) &direccionServidor, sizeof(direccionServidor)) != 0) {
-		perror("Fallo el bind");
-		return 1;
+	// --------- SERVER SOCKET--------
+	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if(serverSocket < 0)
+	{
+		printf("[-]Error in connection.\n");
+		exit(1);
 	}
+	printf("[+]Server Socket is created.\n");
 
-	printf("A la espera de un cliente\n");
-	listen(servidor, 100);
+	if(bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) != 0)
+	{
+		printf("[-]Error in binding.\n");
+		exit(1);
+	}
+	printf("[+]Bind to port %d\n", 4444);
 
-	//------------------------------
+	if(listen(serverSocket, 10) == 0)
+	{
+		printf("[+]Listening....\n");
+	}
+	else
+	{
+		printf("[-]Error in binding.\n");
+	}
+	// --------- END--SERVER SOCKET--------
 
-	struct sockaddr_in direccionCliente;
-	unsigned int tamanodireccion;
-	int cliente = accept(servidor, (void*) &direccionCliente, &tamanodireccion);
-
-	printf("Conexion OK!! %i\n", cliente);
-
-	//------------------------------
-
+	int newSocket;
+	socklen_t addr_size;
+	pid_t sond;
 	char* bufferRecev = malloc(1000);
 	char* bufferSend = malloc(1000);
-	while (1) {
-		int bytesRecibidos = recv(cliente, bufferRecev, 1000, 0);
-		if (bytesRecibidos <= 0) {
-			perror("El cliente se desconecto.");
-			return 1;
+
+	while(1)
+	{
+		newSocket = accept(serverSocket, (struct sockaddr*)&newAddr, &addr_size);
+		if(newSocket < 0)
+		{
+			exit(1);
+		}
+		printf("Connection accepted from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
+		//printf("FORK id: %d\n",getgid()); //getid me indica el id del Fork
+
+		if((sond = fork()) == 0)
+		{
+			close(serverSocket);
+			
+			while(1)
+			{
+				recv(newSocket, bufferRecev, 1024, 0);
+				if(strcmp(bufferRecev, ":exit") == 0)
+				{
+					printf("Disconnected from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
+					break;
+				}
+				else
+				{
+					printf("Client: \t%s\n", bufferRecev);
+					printf("Server: \t");
+					fgets(bufferSend, 20, stdin);
+					send(newSocket, bufferSend, strlen(bufferSend), 0);
+					bzero(bufferRecev, sizeof(bufferRecev));
+				}
+			}
 		}
 
-		bufferRecev[bytesRecibidos] = '\0';
-		printf("CLIENTE:  %s\n", bufferRecev);
-
-	printf("\nSERVIDOR: ");
-	fgets(bufferSend, 20, stdin);
-	printf("\n");
-    	send(cliente, bufferSend, strlen(bufferSend), 0);
 	}
 
-	free(bufferRecev);
-	free(bufferSend);
+	close(newSocket);
+
+
 	return 0;
 }
